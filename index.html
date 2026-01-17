@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group 5 - XLNet Spam Detector</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        h1 { color: #333; font-size: 24px; margin-bottom: 20px; }
+        p { color: #666; margin-bottom: 20px; }
+        input { width: 90%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        button { background-color: #0070f3; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.3s; width: 100%; }
+        button:hover { background-color: #0051a2; }
+        #result { margin-top: 20px; font-weight: bold; font-size: 18px; padding: 10px; border-radius: 6px; }
+        .spam { color: #d32f2f; background-color: #fdecea; }
+        .ham { color: #2e7d32; background-color: #e8f5e9; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>XLNet Spam Detector</h1>
+        <p>Group 5 Project Demo</p>
+        
+        <input type="text" id="smsInput" placeholder="Type a message here...">
+        <button onclick="checkSpam()">Check Message</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function checkSpam() {
+            const text = document.getElementById("smsInput").value;
+            const resultDiv = document.getElementById("result");
+            
+            if (!text) {
+                resultDiv.innerText = "Please type a message first.";
+                return;
+            }
+
+            resultDiv.innerText = "Analyzing...";
+            resultDiv.className = "";
+
+            // 👇 THIS IS YOUR EXACT LINK
+            const apiUrl = "https://jay9112007-xlnet-spam-api.hf.space/predict"; 
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+                
+                // Show the result
+                resultDiv.innerText = "Prediction: " + data.prediction;
+                
+                // Change color based on result
+                if (data.prediction === "SPAM") {
+                    resultDiv.className = "spam";
+                } else {
+                    resultDiv.className = "ham";
+                }
+                
+            } catch (error) {
+                resultDiv.innerText = "Error: Model is waking up. Wait 30s and try again.";
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
