@@ -4,45 +4,228 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group 5 - XLNet Spam Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        h1 { color: #333; font-size: 24px; margin-bottom: 20px; }
-        p { color: #666; margin-bottom: 20px; }
-        input { width: 90%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
-        button { background-color: #0070f3; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.3s; width: 100%; }
-        button:hover { background-color: #0051a2; }
-        #result { margin-top: 20px; font-weight: bold; font-size: 18px; padding: 10px; border-radius: 6px; }
-        .spam { color: #d32f2f; background-color: #fdecea; }
-        .ham { color: #2e7d32; background-color: #e8f5e9; }
+        /* --- 1. THE PAZAZZ (Animations & Backgrounds) --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite; /* Moving background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 2. GLASSMORPHISM CARD --- */
+        .container {
+            background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+            backdrop-filter: blur(12px); /* Blur effect behind the card */
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px); /* Subtle lift on hover */
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- 3. MODERN INPUTS --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box; /* Fixes padding issues */
+        }
+
+        input:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+        /* --- 4. THE ACTION BUTTON --- */
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+            filter: brightness(110%);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- 5. RESULTS STYLING --- */
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            opacity: 0; /* Hidden initially */
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+        }
+
+        #result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .spam {
+            background-color: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .ham {
+            background-color: #f0fff4;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Loading Spinner Animation */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #ffffff;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Footer Branding */
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #a0aec0;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>XLNet Spam Detector</h1>
-        <p>Group 5 Project Demo</p>
+        <h1>🚀 XLNet Spam Detector</h1>
+        <p class="subtitle">Group 5 Final Project</p>
         
-        <input type="text" id="smsInput" placeholder="Type a message here...">
-        <button onclick="checkSpam()">Check Message</button>
+        <div class="input-group">
+            <input type="text" id="smsInput" placeholder="Type a message to analyze..." autocomplete="off">
+        </div>
+
+        <button onclick="checkSpam()" id="checkBtn">
+            <span id="btnText">Analyze Message</span>
+            <div class="spinner" id="spinner"></div>
+        </button>
 
         <div id="result"></div>
+
+        <div class="footer">
+            Powered by Hugging Face & Vercel
+        </div>
     </div>
 
     <script>
         async function checkSpam() {
             const text = document.getElementById("smsInput").value;
             const resultDiv = document.getElementById("result");
+            const btn = document.getElementById("checkBtn");
+            const btnText = document.getElementById("btnText");
+            const spinner = document.getElementById("spinner");
             
+            // 1. Validation
             if (!text) {
-                resultDiv.innerText = "Please type a message first.";
+                // Shake animation for error
+                const input = document.getElementById("smsInput");
+                input.style.borderColor = "#e53e3e";
+                setTimeout(() => input.style.borderColor = "#e2e8f0", 2000);
                 return;
             }
 
-            resultDiv.innerText = "Analyzing...";
-            resultDiv.className = "";
+            // 2. UI Loading State
+            resultDiv.className = ""; 
+            resultDiv.innerHTML = "";
+            resultDiv.classList.remove("show");
+            
+            btn.disabled = true;
+            btnText.innerText = "Analyzing AI Model...";
+            spinner.style.display = "block";
 
-            // 👇 THIS IS YOUR EXACT LINK
+            // YOUR API LINK
             const apiUrl = "https://jay9112007-xlnet-spam-api.hf.space/predict"; 
 
             try {
@@ -54,21 +237,34 @@
 
                 const data = await response.json();
                 
-                // Show the result
-                resultDiv.innerText = "Prediction: " + data.prediction;
-                
-                // Change color based on result
+                // 3. Show Result with Animation
                 if (data.prediction === "SPAM") {
-                    resultDiv.className = "spam";
+                    resultDiv.innerHTML = `<span>🚫</span> <span>SPAM DETECTED</span>`;
+                    resultDiv.className = "spam show";
                 } else {
-                    resultDiv.className = "ham";
+                    resultDiv.innerHTML = `<span>✅</span> <span>SAFE MESSAGE (HAM)</span>`;
+                    resultDiv.className = "ham show";
                 }
                 
             } catch (error) {
-                resultDiv.innerText = "Error: Model is waking up. Wait 30s and try again.";
+                resultDiv.innerText = "⚠️ Server is waking up. Please try again in 30s.";
+                resultDiv.style.color = "#d69e2e";
+                resultDiv.classList.add("show");
                 console.error(error);
+            } finally {
+                // 4. Reset Button
+                btn.disabled = false;
+                btnText.innerText = "Analyze Message";
+                spinner.style.display = "none";
             }
         }
+        
+        // Allow pressing "Enter" to submit
+        document.getElementById("smsInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkSpam();
+            }
+        });
     </script>
 </body>
 </html>
